@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { registerSchema } from '@shared/schemas/auth';
 import type { RegisterData } from '../types';
 
 interface RegisterFormState {
@@ -11,6 +12,13 @@ interface RegisterFormState {
   name: string;
 }
 
+interface FieldErrors {
+  email?: string[];
+  username?: string[];
+  password?: string[];
+  name?: string[];
+}
+
 export const Register = () => {
   const [formData, setFormData] = useState<RegisterFormState>({
     email: '',
@@ -18,6 +26,8 @@ export const Register = () => {
     password: '',
     name: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [serverError, setServerError] = useState<string>('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -25,24 +35,51 @@ export const Register = () => {
     const key = e.target.name as keyof RegisterFormState;
     const { value } = e.target;
     setFormData((prev) => ({ ...prev, [key]: value }));
+    setFieldErrors((prev) => ({ ...prev, [key]: undefined }));
+    setServerError('');
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFieldErrors({});
+    setServerError('');
+
     const payload: RegisterData = {
       email: formData.email,
       username: formData.username,
       password: formData.password,
       ...(formData.name.trim() ? { name: formData.name } : {}),
     };
-    await register(payload);
-    navigate('/dashboard');
+
+    const validationResult = registerSchema.safeParse(payload);
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.flatten().fieldErrors;
+      setFieldErrors(errors as FieldErrors);
+      return;
+    }
+
+    try {
+      await register(payload);
+      navigate('/dashboard');
+    } catch (error) {
+      if (error instanceof Error) {
+        setServerError(error.message);
+      } else {
+        setServerError('Registration failed. Please try again.');
+      }
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold mb-6">Register</h2>
+        {serverError && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {serverError}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
@@ -51,8 +88,12 @@ export const Register = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              required
               className="w-full border rounded px-3 py-2"
             />
+            {fieldErrors.email && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.email[0]}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Username</label>
@@ -61,11 +102,15 @@ export const Register = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
+              required
               className="w-full border rounded px-3 py-2"
             />
+            {fieldErrors.username && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.username[0]}</p>
+            )}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
+            <label className="block text-sm font-medium mb-1">Name (Optional)</label>
             <input
               type="text"
               name="name"
@@ -73,6 +118,9 @@ export const Register = () => {
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
             />
+            {fieldErrors.name && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.name[0]}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
@@ -81,8 +129,12 @@ export const Register = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              required
               className="w-full border rounded px-3 py-2"
             />
+            {fieldErrors.password && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.password[0]}</p>
+            )}
           </div>
           <button
             type="submit"
