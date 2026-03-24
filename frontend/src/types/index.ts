@@ -5,6 +5,23 @@ export interface User {
   name?: string;
 }
 
+export interface TaskAssignment {
+  id: string;
+  taskId: string;
+  userId: string;
+  user?: User; 
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  taskId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -18,16 +35,6 @@ export interface Task {
   user?: User;
   assignments?: TaskAssignment[];
   comments?: Comment[];
-}
-
-export interface Comment {
-  id: string;
-  content: string;
-  taskId: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-  user?: User;
 }
 
 export interface AuthResponse {
@@ -55,9 +62,3 @@ export interface TaskFormData {
   priority: string;
 }
 
-export interface TaskAssignment {
-  id: string;
-  taskId: string;
-  userId: string;
-  user?: User; 
-}
