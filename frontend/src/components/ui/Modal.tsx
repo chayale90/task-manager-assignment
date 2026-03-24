@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import clsx from 'clsx';
@@ -12,13 +12,25 @@ export interface ModalProps {
 }
 
 export const Modal = ({ isOpen, onClose, title, children, className }: ModalProps) => {
+  const [visible, setVisible] = useState(false);
+  const [animate, setAnimate] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
+      setVisible(true);
       document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setAnimate(true));
+      });
     } else {
-      document.body.style.overflow = 'unset';
+      setAnimate(false);
+      const timer = setTimeout(() => {
+        setVisible(false);
+        document.body.style.overflow = 'unset';
+      }, 200);
+      return () => clearTimeout(timer);
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -35,29 +47,33 @@ export const Modal = ({ isOpen, onClose, title, children, className }: ModalProp
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className={clsx(
+          'absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200',
+          animate ? 'opacity-100' : 'opacity-0'
+        )}
         onClick={onClose}
       />
       
       <div 
         className={twMerge(
           clsx(
-            'relative bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6',
+            'relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg max-w-md w-full mx-4 p-6 transition-all duration-200',
+            animate ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
             className
           )
         )}
       >
         {title && (
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

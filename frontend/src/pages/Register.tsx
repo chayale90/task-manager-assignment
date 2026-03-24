@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { registerSchema } from '@shared/schemas/auth';
+import { Card, Input, Button } from '../components/ui';
 import type { RegisterData } from '../types';
 
 interface RegisterFormState {
@@ -77,93 +78,82 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <div className="flex items-center justify-center gap-2 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 transition-colors duration-200 px-4">
+      <Card className="max-w-md w-full p-8">
+        <div className="flex items-center justify-center gap-2 mb-8">
           <Sparkles className="w-8 h-8 text-indigo-600" />
           <h1 className="text-3xl">
-            <span className="font-bold text-slate-900">Taski</span>
+            <span className="font-bold text-slate-900 dark:text-white">Taski</span>
             <span className="text-indigo-600">.ai</span>
           </h1>
         </div>
-        <h2 className="text-2xl font-bold mb-6 text-slate-900">Register</h2>
+        <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">Register</h2>
         {serverError && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400 rounded-lg text-sm">
             {serverError}
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
+            <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Email</label>
+            <Input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full border rounded px-3 py-2"
+              placeholder="you@example.com"
+              error={fieldErrors.email?.[0]}
             />
-            {fieldErrors.email && (
-              <p className="text-red-600 text-sm mt-1">{fieldErrors.email[0]}</p>
-            )}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
-            <input
+            <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Username</label>
+            <Input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
               required
-              className="w-full border rounded px-3 py-2"
+              placeholder="johndoe"
+              error={fieldErrors.username?.[0]}
             />
-            {fieldErrors.username && (
-              <p className="text-red-600 text-sm mt-1">{fieldErrors.username[0]}</p>
-            )}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Name (Optional)</label>
-            <input
+            <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Name (Optional)</label>
+            <Input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              placeholder="John Doe"
+              error={fieldErrors.name?.[0]}
             />
-            {fieldErrors.name && (
-              <p className="text-red-600 text-sm mt-1">{fieldErrors.name[0]}</p>
-            )}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input
+            <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Password</label>
+            <Input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full border rounded px-3 py-2"
+              placeholder="••••••••"
+              error={fieldErrors.password?.[0]}
             />
-            {fieldErrors.password && (
-              <p className="text-red-600 text-sm mt-1">{fieldErrors.password[0]}</p>
-            )}
           </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-          >
+          <Button type="submit" className="w-full">
             Register
-          </button>
+          </Button>
         </form>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-500 hover:text-blue-600 underline">
+            <Link to="/login" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
               Login here
             </Link>
           </p>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

@@ -18,6 +18,16 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
         userId,
         ...(status && { status: status as string }),
       },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+      orderBy:{
+        createdAt:'desc'
+      }
     });
 
     for (const task of tasks) {

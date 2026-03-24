@@ -6,7 +6,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, ...props }, ref) => {
-    const baseStyles = 'bg-white rounded-lg shadow-sm p-6';
+    const baseStyles = 'bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 transition-colors duration-200';
     
     return (
       <div

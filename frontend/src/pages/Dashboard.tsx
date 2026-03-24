@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { TaskList } from '../components/TaskList';
 import { TaskForm } from '../components/TaskForm';
+import { EmptyState } from '../components/EmptyState';
 import { Navbar } from '../components/Navbar';
-import { Button } from '../components/ui';
+import { Button, Card } from '../components/ui';
 import { useTasks } from '../hooks/useTasks';
 import { useAuth } from '../hooks/useAuth';
 import type { TaskFilters, TaskFormData } from '../types';
@@ -28,16 +30,16 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
       <Navbar user={user} onLogout={handleLogout} />
       
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
             {user != null && (
-              <p className="text-sm text-slate-600 mt-1">
-                Welcome, {user.name || user.username}!
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Welcome back, {user.name || user.username}
               </p>
             )}
           </div>
@@ -45,25 +47,37 @@ export const Dashboard = () => {
             onClick={() => setShowForm(!showForm)}
             variant={showForm ? 'secondary' : 'primary'}
           >
-            {showForm ? 'Cancel' : 'New Task'}
+            {showForm ? 'Cancel' : (
+              <>
+                <Plus className="w-4 h-4 mr-1.5 inline" />
+                New Task
+              </>
+            )}
           </Button>
         </div>
 
-        {showForm && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        {/* Task form with smooth reveal */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            showForm ? 'max-h-[600px] opacity-100 mb-8' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <Card>
             <TaskForm onSubmit={handleCreateTask} />
-          </div>
-        )}
+          </Card>
+        </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold mb-4 text-slate-900">Tasks</h2>
+        {/* Task list or empty state */}
+        {!loading && tasks.length === 0 ? (
+          <EmptyState onCreateTask={() => setShowForm(true)} />
+        ) : (
           <TaskList 
             tasks={tasks} 
             loading={loading} 
             deleteTask={deleteTask} 
             updateTask={updateTask} 
           />
-        </div>
+        )}
       </div>
     </div>
   );
