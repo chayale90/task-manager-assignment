@@ -10,6 +10,9 @@ export const useAuth = () => {
     if (token) {
       api.get('/auth/me').then((data: any) => {
         setUser(data.user);
+      }).catch(() => {
+        localStorage.removeItem('token');
+      }).finally(() => {
         setLoading(false);
       });
     } else {
