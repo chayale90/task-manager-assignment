@@ -42,12 +42,7 @@ export interface AuthResponse {
   user: User;
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  username: string;
-  name?: string;
-}
+export type { RegisterData } from '@shared/schemas/auth';
 
 export interface TaskFilters {
   status?: string;

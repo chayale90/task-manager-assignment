@@ -1,53 +1,81 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { registerSchema } from '@shared/schemas/auth';
 
 const prisma = new PrismaClient();
 
 export const register = async (req: AuthRequest, res: Response) => {
-  const { email, username, password, name } = req.body;
+  try {
+    const validationResult = registerSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const fieldErrors = validationResult.error.flatten().fieldErrors;
+      return res.status(400).json({ 
+        error: 'Validation failed',
+        fields: fieldErrors
+      });
+    }
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { email },
-        { username },
-      ],
-    },
-  });
+    const { email, username, password, name } = validationResult.data;
 
-  if (existingUser) {
-    return res.status(400).json({ error: 'User already exists' });
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username },
+        ],
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        password: hashedPassword,
+        name,
+      },
+    });
+
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+      },
+      token,
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        const target = (error.meta?.target as string[]) || [];
+        if (target.includes('email')) {
+          return res.status(400).json({ error: 'Email already taken' });
+        }
+        if (target.includes('username')) {
+          return res.status(400).json({ error: 'Username already taken' });
+        }
+        return res.status(400).json({ error: 'User already exists' });
+      }
+    }
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Failed to register user' });
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      username,
-      password: hashedPassword,
-      name,
-    },
-  });
-
-  const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET || 'fallback-secret',
-    { expiresIn: '7d' }
-  );
-
-  res.status(201).json({
-    user: {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      name: user.name,
-    },
-    token,
-  });
 };
 
 export const login = async (req: AuthRequest, res: Response) => {
