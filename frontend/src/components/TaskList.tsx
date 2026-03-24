@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { useTasks } from '../hooks/useTasks';
-import type { Task, TaskFilters, TaskFormData } from '../types';
+import type { Task, TaskFormData } from '../types';
 
 interface TaskListProps {
-  filters?: TaskFilters;
+  tasks: Task[];
+  loading: boolean;
+  deleteTask: (id: string) => Promise<void>;
+  updateTask: (id: string, taskData: Partial<TaskFormData>) => Promise<Task>;
 }
 
-export const TaskList = ({ filters }: TaskListProps) => {
-  const { tasks, loading, deleteTask, updateTask } = useTasks(filters);
+export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
 
