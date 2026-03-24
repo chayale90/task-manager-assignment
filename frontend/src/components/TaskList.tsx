@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import type { Task, TaskFormData } from '../types';
 
 interface TaskListProps {
@@ -34,6 +35,7 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
       setEditFormData({});
     } catch (error) {
       console.error('Failed to update task:', error);
+      toast.error('Failed to update task. Please try again.');
     }
   };
 

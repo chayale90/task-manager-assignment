@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { TaskList } from '../components/TaskList';
 import { TaskForm } from '../components/TaskForm';
+import { Navbar } from '../components/Navbar';
+import { Button } from '../components/ui';
 import { useTasks } from '../hooks/useTasks';
 import { useAuth } from '../hooks/useAuth';
 import type { TaskFilters, TaskFormData } from '../types';
@@ -20,45 +23,40 @@ export const Dashboard = () => {
 
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50">
+      <Navbar user={user} onLogout={handleLogout} />
+      
+      <div className="max-w-6xl mx-auto p-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
             {user != null && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-slate-600 mt-1">
                 Welcome, {user.name || user.username}!
               </p>
             )}
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              {showForm ? 'Cancel' : 'New Task'}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              Logout
-            </button>
-          </div>
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            variant={showForm ? 'secondary' : 'primary'}
+          >
+            {showForm ? 'Cancel' : 'New Task'}
+          </Button>
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <TaskForm onSubmit={handleCreateTask} />
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Tasks</h2>
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-4 text-slate-900">Tasks</h2>
           <TaskList 
             tasks={tasks} 
             loading={loading} 

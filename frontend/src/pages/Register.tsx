@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { registerSchema } from '@shared/schemas/auth';
 import type { RegisterData } from '../types';
@@ -61,20 +63,30 @@ export const Register = () => {
 
     try {
       await register(payload);
+      toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
       if (error instanceof Error) {
         setServerError(error.message);
+        toast.error(error.message);
       } else {
         setServerError('Registration failed. Please try again.');
+        toast.error('Registration failed. Please try again.');
       }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold mb-6">Register</h2>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Sparkles className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl">
+            <span className="font-bold text-slate-900">Taski</span>
+            <span className="text-indigo-600">.ai</span>
+          </h1>
+        </div>
+        <h2 className="text-2xl font-bold mb-6 text-slate-900">Register</h2>
         {serverError && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {serverError}

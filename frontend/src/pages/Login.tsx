@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 
 export const Login = () => {
@@ -11,14 +13,30 @@ export const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
-    navigate('/dashboard');
+    try {
+      await login(email, password);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold mb-6">Login</h2>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Sparkles className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl">
+            <span className="font-bold text-slate-900">Taski</span>
+            <span className="text-indigo-600">.ai</span>
+          </h1>
+        </div>
+        <h2 className="text-2xl font-bold mb-6 text-slate-900">Login</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
