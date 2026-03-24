@@ -1,9 +1,18 @@
 import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import type { RegisterData } from '../types';
+
+interface RegisterFormState {
+  email: string;
+  username: string;
+  password: string;
+  name: string;
+}
 
 export const Register = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterFormState>({
     email: '',
     username: '',
     password: '',
@@ -12,16 +21,21 @@ export const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e: any) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const key = e.target.name as keyof RegisterFormState;
+    const { value } = e.target;
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await register(formData);
+    const payload: RegisterData = {
+      email: formData.email,
+      username: formData.username,
+      password: formData.password,
+      ...(formData.name.trim() ? { name: formData.name } : {}),
+    };
+    await register(payload);
     navigate('/dashboard');
   };
 
@@ -89,4 +103,3 @@ export const Register = () => {
     </div>
   );
 };
-
