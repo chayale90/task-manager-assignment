@@ -18,8 +18,21 @@ model User {
   updatedAt DateTime @updatedAt
 
   tasks       Task[]
+  projects    Project[]        // added
   assignments TaskAssignment[]
   comments    Comment[]
+}
+
+model Project {                  // added model
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id])
+  tasks Task[]
 }
 
 model Task {
@@ -29,10 +42,12 @@ model Task {
   status      String   @default("TODO")
   priority    String   @default("MEDIUM")
   userId      String
+  projectId   String?          // added
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user        User             @relation(fields: [userId], references: [id])
+  project     Project?         @relation(fields: [projectId], references: [id]) //added
   assignments TaskAssignment[]
   comments    Comment[]
   tags        TaskTag[]
