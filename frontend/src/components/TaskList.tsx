@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { useTasks } from '../hooks/useTasks';
+import type { Task, TaskFilters, TaskFormData } from '../types';
 
-export const TaskList = ({ filters }: any) => {
+interface TaskListProps {
+  filters?: TaskFilters;
+}
+
+export const TaskList = ({ filters }: TaskListProps) => {
   const { tasks, loading, deleteTask, updateTask } = useTasks(filters);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<any>({});
+  const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
 
-  const handleEditClick = (task: any) => {
+  const handleEditClick = (task: Task) => {
     setEditingId(task.id);
     setEditFormData({
       title: task.title,
@@ -31,7 +36,7 @@ export const TaskList = ({ filters }: any) => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof TaskFormData, value: string) => {
     setEditFormData({
       ...editFormData,
       [field]: value,
@@ -44,7 +49,7 @@ export const TaskList = ({ filters }: any) => {
 
   return (
     <div className="space-y-4">
-      {tasks.map((task: any) => (
+      {tasks.map((task) => (
         <div
           key={task.id}
           className="border rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -56,7 +61,7 @@ export const TaskList = ({ filters }: any) => {
                 <label className="block text-sm font-medium mb-1">Title</label>
                 <input
                   type="text"
-                  value={editFormData.title}
+                  value={editFormData.title ?? ''}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full border rounded px-3 py-2"
                 />
@@ -64,7 +69,7 @@ export const TaskList = ({ filters }: any) => {
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
-                  value={editFormData.description}
+                  value={editFormData.description ?? ''}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   className="w-full border rounded px-3 py-2"
                   rows={3}
@@ -74,7 +79,7 @@ export const TaskList = ({ filters }: any) => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Status</label>
                   <select
-                    value={editFormData.status}
+                    value={editFormData.status ?? ''}
                     onChange={(e) => handleInputChange('status', e.target.value)}
                     className="w-full border rounded px-3 py-2"
                   >
@@ -86,7 +91,7 @@ export const TaskList = ({ filters }: any) => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Priority</label>
                   <select
-                    value={editFormData.priority}
+                    value={editFormData.priority ?? ''}
                     onChange={(e) => handleInputChange('priority', e.target.value)}
                     className="w-full border rounded px-3 py-2"
                   >
@@ -147,4 +152,3 @@ export const TaskList = ({ filters }: any) => {
     </div>
   );
 };
-

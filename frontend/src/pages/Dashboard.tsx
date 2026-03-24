@@ -4,15 +4,16 @@ import { TaskList } from '../components/TaskList';
 import { TaskForm } from '../components/TaskForm';
 import { useTasks } from '../hooks/useTasks';
 import { useAuth } from '../hooks/useAuth';
+import type { TaskFilters, TaskFormData } from '../types';
 
 export const Dashboard = () => {
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState({});
+  const [filters] = useState<TaskFilters>({});
   const { createTask } = useTasks();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
-  const handleCreateTask = async (taskData: any) => {
+  const handleCreateTask = async (taskData: TaskFormData) => {
     await createTask(taskData);
     setShowForm(false);
   };
@@ -28,7 +29,7 @@ export const Dashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            {user && (
+            {user != null && (
               <p className="text-sm text-gray-600 mt-1">
                 Welcome, {user.name || user.username}!
               </p>
@@ -64,4 +65,3 @@ export const Dashboard = () => {
     </div>
   );
 };
-

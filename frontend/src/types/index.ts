@@ -5,18 +5,11 @@ export interface User {
   name?: string;
 }
 
-export interface Task {
+export interface TaskAssignment {
   id: string;
-  title: string;
-  description?: string;
-  status: string;
-  priority: string;
+  taskId: string;
   userId: string;
-  createdAt: string;
-  updatedAt: string;
-  user?: any;
-  assignments?: any[];
-  comments?: any[];
+  user?: User; 
 }
 
 export interface Comment {
@@ -25,8 +18,47 @@ export interface Comment {
   taskId: string;
   userId: string;
   createdAt: string;
-  user?: any;
+  updatedAt: string;
+  user?: User;
 }
 
-export type ApiResponse = any;
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  userId: string;
+  projectId?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+  assignments?: TaskAssignment[];
+  comments?: Comment[];
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  username: string;
+  name?: string;
+}
+
+export interface TaskFilters {
+  status?: string;
+  priority?: string;
+  [key: string]: string | undefined;
+}
+
+export interface TaskFormData {
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+}
 

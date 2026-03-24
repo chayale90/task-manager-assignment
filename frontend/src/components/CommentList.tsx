@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import type { Comment } from '../types';
 
 export const CommentList = ({ taskId }: { taskId: string }) => {
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -10,7 +11,7 @@ export const CommentList = ({ taskId }: { taskId: string }) => {
   }, [taskId]);
 
   const fetchComments = async () => {
-    const data = await api.get(`/comments?taskId=${taskId}`);
+    const data = await api.get<Comment[]>(`/comments?taskId=${taskId}`);
     setComments(data);
     setLoading(false);
   };
@@ -21,7 +22,7 @@ export const CommentList = ({ taskId }: { taskId: string }) => {
 
   return (
     <div className="space-y-4">
-      {comments.map((comment: any) => (
+      {comments.map((comment) => (
         <div key={comment.id} className="border rounded p-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-semibold">
@@ -40,4 +41,3 @@ export const CommentList = ({ taskId }: { taskId: string }) => {
     </div>
   );
 };
-
