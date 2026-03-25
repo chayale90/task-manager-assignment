@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trash2, Send } from 'lucide-react';
 import { useComments } from '../hooks/useComments';
-import { Button } from './ui';
+import { Button, Modal } from './ui';
 import type { User } from '../types';
 
 interface CommentListProps {
@@ -13,6 +13,7 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
   const { comments, loading, error, addComment, deleteComment } = useComments(taskId);
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,10 +30,11 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
     }
   };
 
-  const handleDelete = async (commentId: string) => {
-    if (!confirm('Delete this comment?')) return;
+  const handleDeleteConfirm = async () => {
+    if (!commentToDelete) return;
     try {
-      await deleteComment(commentId);
+      await deleteComment(commentToDelete);
+      setCommentToDelete(null);
     } catch (err) {
       console.error('Failed to delete comment:', err);
     }
@@ -77,13 +79,13 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
             size="sm"
             disabled={!newComment.trim() || submitting}
           >
-            <Send className="w-4 h-4 mr-1.5" />
+            <Send className="w-3.5 h-3.5" />
             {submitting ? 'Posting...' : 'Post Comment'}
           </Button>
         </div>
       </form>
 
-      <div className="space-y-3 mt-6">
+      <div className="space-y-3 mt-6 max-h-64 overflow-y-auto">
         {comments.length === 0 ? (
           <p className="text-center text-slate-500 dark:text-slate-400 py-8">
             No comments yet. Be the first to comment!
@@ -96,8 +98,11 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words mb-2">
+                    {comment.content}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
                       {comment.user?.name || comment.user?.username || 'Unknown'}
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -110,13 +115,10 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
                       })}
                     </span>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
-                    {comment.content}
-                  </p>
                 </div>
                 {currentUser && comment.userId === currentUser.id && (
                   <button
-                    onClick={() => handleDelete(comment.id)}
+                    onClick={() => setCommentToDelete(comment.id)}
                     className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-500/10 transition-colors flex-shrink-0"
                     title="Delete comment"
                   >
@@ -128,6 +130,27 @@ export const CommentList = ({ taskId, currentUser }: CommentListProps) => {
           ))
         )}
       </div>
+
+      <Modal
+        isOpen={!!commentToDelete}
+        onClose={() => setCommentToDelete(null)}
+        title="Delete Comment"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600 dark:text-slate-400">
+            Are you sure you want to delete this comment?
+          </p>
+          
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" onClick={() => setCommentToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDeleteConfirm}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
