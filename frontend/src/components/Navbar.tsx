@@ -25,7 +25,6 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
 
   const toggleTheme = () => {
     const next = theme === 'light' ? 'dark' : 'light';
-    console.log('Theme change:', theme, '->', next);
     setTheme(next);
   };
 
