@@ -14,7 +14,7 @@ import type { TaskFilters, TaskFormData } from '../types';
 export const Dashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [filters] = useState<TaskFilters>({});
-  const { tasks, loading, createTask, updateTask, deleteTask } = useTasks(filters);
+  const { tasks, loading, createTask, updateTask, deleteTask, restoreTask } = useTasks(filters);
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
@@ -75,7 +75,8 @@ export const Dashboard = () => {
             tasks={tasks} 
             loading={loading} 
             deleteTask={deleteTask} 
-            updateTask={updateTask} 
+            updateTask={updateTask}
+            restoreTask={restoreTask}
           />
         )}
       </div>

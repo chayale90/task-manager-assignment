@@ -9,6 +9,7 @@ interface TaskListProps {
   loading: boolean;
   deleteTask: (id: string) => Promise<void>;
   updateTask: (id: string, taskData: Partial<TaskFormData>) => Promise<Task>;
+  restoreTask: (id: string) => void;
 }
 
 const priorityAccent: Record<string, string> = {
