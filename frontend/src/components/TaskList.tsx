@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, Input, Button } from './ui';
+import { TaskListSkeleton } from './TaskSkeleton';
 import type { Task, TaskFormData } from '../types';
 
 interface TaskListProps {
@@ -92,11 +93,7 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-pulse text-slate-400 dark:text-slate-500 text-sm">Loading tasks...</div>
-      </div>
-    );
+    return <TaskListSkeleton count={5} />;
   }
 
   return (
