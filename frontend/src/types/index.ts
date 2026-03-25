@@ -22,6 +22,19 @@ export interface Comment {
   user?: User;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+export interface TaskTag {
+  id: string;
+  taskId: string;
+  tagId: string;
+  tag: Tag;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -35,6 +48,7 @@ export interface Task {
   user?: User;
   assignments?: TaskAssignment[];
   comments?: Comment[];
+  tags?: TaskTag[];
 }
 
 export interface AuthResponse {
@@ -47,6 +61,7 @@ export type { RegisterData } from '@shared/schemas/auth';
 export interface TaskFilters {
   status?: string;
   priority?: string;
+  search?: string;
   [key: string]: string | undefined;
 }
 
@@ -55,5 +70,7 @@ export interface TaskFormData {
   description: string;
   status: string;
   priority: string;
+  assigneeIds?: string[];
+  tagIds?: string[];
 }
 

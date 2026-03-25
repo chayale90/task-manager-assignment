@@ -5,49 +5,111 @@ import { AuthRequest } from '../middleware/auth';
 const prisma = new PrismaClient();
 
 export const createComment = async (req: AuthRequest, res: Response) => {
-  const userId = req.userId;
-  const { taskId, content } = req.body;
+  try {
+    const userId = req.userId;
+    const { taskId, content } = req.body;
 
-  const comment = await prisma.comment.create({
-    data: {
-      content,
-      taskId,
-      userId: userId!,
-    },
-  });
+    if (!taskId || !content) {
+      return res.status(400).json({ error: 'taskId and content are required' });
+    }
 
-  res.status(201).json(comment);
+    if (typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({ error: 'content must be a non-empty string' });
+    }
+
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const comment = await prisma.comment.create({
+      data: {
+        content: content.trim(),
+        taskId,
+        userId: userId!,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json(comment);
+  } catch (error) {
+    console.error('Error creating comment:', error);
+    res.status(500).json({ error: 'Failed to create comment' });
+  }
 };
 
 export const getComments = async (req: AuthRequest, res: Response) => {
-  const { taskId } = req.query;
+  try {
+    const { taskId } = req.query;
 
-  const comments = await prisma.comment.findMany({
-    where: {
-      taskId: taskId as string,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+    if (!taskId || typeof taskId !== 'string') {
+      return res.status(400).json({ error: 'taskId is required' });
+    }
 
-  for (const comment of comments) {
-    const user = await prisma.user.findUnique({
-      where: { id: comment.userId },
+    const comments = await prisma.comment.findMany({
+      where: {
+        taskId: taskId as string,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
-    (comment as any).user = user;
-  }
 
-  res.json(comments);
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
 };
 
 export const deleteComment = async (req: AuthRequest, res: Response) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
 
-  await prisma.comment.delete({
-    where: { id },
-  });
+    const comment = await prisma.comment.findUnique({
+      where: { id },
+    });
 
-  res.status(204).send();
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: 'You can only delete your own comments' });
+    }
+
+    await prisma.comment.delete({
+      where: { id },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
 };
 

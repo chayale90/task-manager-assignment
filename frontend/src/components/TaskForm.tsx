@@ -1,19 +1,37 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import type { Task, TaskFormData } from '../types';
+import { Input, Button, Select, MultiSelect } from './ui';
+import type { Task, TaskFormData, User, Tag } from '../types';
+import { toast } from 'sonner';
 
 interface TaskFormProps {
   onSubmit: (data: TaskFormData) => void;
   initialData?: Partial<Task>;
+  users: User[];
+  usersLoading: boolean;
+  tags: Tag[];
+  tagsLoading: boolean;
 }
 
-export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
+const textareaStyles = 'w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900';
+
+export const TaskForm = ({ onSubmit, initialData, users, usersLoading, tags, tagsLoading }: TaskFormProps) => {
+
+  const initialAssigneeIds =
+    initialData?.assignments?.map((a) => a.userId) ?? [];
+
+  const initialTagIds = initialData?.tags?.map((t) => t.tagId) ?? [];
+
   const [formData, setFormData] = useState<TaskFormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
     status: initialData?.status || 'TODO',
     priority: initialData?.priority || 'MEDIUM',
+    assigneeIds: initialAssigneeIds,
+    tagIds: initialTagIds,
   });
+
+  const [titleError, setTitleError] = useState<string>('');
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -23,67 +41,115 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
       ...formData,
       [name]: value,
     });
+    
+    if (name === 'title' && titleError) {
+      setTitleError('');
+    }
+  };
+
+  const handleAssigneesChange = (ids: string[]) => {
+    setFormData({ ...formData, assigneeIds: ids });
+  };
+
+  const handleTagsChange = (ids: string[]) => {
+    setFormData({ ...formData, tagIds: ids });
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    const trimmedTitle = formData.title.trim();
+    if (!trimmedTitle) {
+      setTitleError('Title is required');
+      toast.error('Please enter a title for the task');
+      return;
+    }
+    
+    onSubmit({ ...formData, title: trimmedTitle });
   };
+
+  const userOptions = users.map((u) => ({
+    value: u.id,
+    label: u.name || u.username,
+  }));
+
+  const tagOptions = tags.map((t) => ({
+    value: t.id,
+    label: t.name,
+  }));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Title</label>
-        <input
+        <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">
+          Title <span className="text-red-500">*</span>
+        </label>
+        <Input
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
+          placeholder="What needs to be done?"
+          className={titleError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
         />
+        {titleError && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{titleError}</p>
+        )}
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Description</label>
+        <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Description</label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
-          rows={4}
+          className={textareaStyles}
+          rows={3}
+          placeholder="Add some details..."
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Status</label>
-        <select
+      <div className="grid grid-cols-2 gap-4">
+        <Select
+          label="Status"
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
         >
-          <option value="TODO">TODO</option>
-          <option value="IN_PROGRESS">IN_PROGRESS</option>
-          <option value="DONE">DONE</option>
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Priority</label>
-        <select
+          <option value="TODO">Todo</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="DONE">Done</option>
+        </Select>
+        <Select
+          label="Priority"
           name="priority"
           value={formData.priority}
           onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
         >
-          <option value="LOW">LOW</option>
-          <option value="MEDIUM">MEDIUM</option>
-          <option value="HIGH">HIGH</option>
-        </select>
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+        </Select>
       </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-      >
+      <MultiSelect
+        label="Categories"
+        options={tagOptions}
+        value={formData.tagIds ?? []}
+        onChange={handleTagsChange}
+        placeholder="Select categories..."
+        loading={tagsLoading}
+        className="z-[100]"
+      />
+      <MultiSelect
+        label="Assignees"
+        options={userOptions}
+        value={formData.assigneeIds ?? []}
+        onChange={handleAssigneesChange}
+        placeholder="Assign team members..."
+        loading={usersLoading}
+        className="z-[100]"
+      />
+      <Button type="submit" className="w-full">
         {initialData ? 'Update Task' : 'Create Task'}
-      </button>
+      </Button>
     </form>
   );
 };

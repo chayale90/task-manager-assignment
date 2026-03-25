@@ -1,45 +1,46 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { createTaskSchema, updateTaskSchema } from '../../../shared/schemas/task';
 
 const prisma = new PrismaClient();
 
+const userSelect = {
+  id: true,
+  email: true,
+  username: true,
+  name: true,
+} as const;
+
+const taskInclude = {
+  user: { select: userSelect },
+  assignments: {
+    include: { user: { select: userSelect } },
+  },
+  tags: {
+    include: { tag: true },
+  },
+} as const;
+
 export const getTasks = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { search, status } = req.query;
+  const { status, priority, search } = req.query;
 
-  let tasks;
-  if (search) {
-    const query = `SELECT * FROM Task WHERE userId = '${userId}' AND (title LIKE '%${search}%' OR description LIKE '%${search}%')`;
-    tasks = await prisma.$queryRawUnsafe(query);
-  } else {
-    tasks = await prisma.task.findMany({
-      where: {
-        userId,
-        ...(status && { status: status as string }),
-      },
-    });
-
-    for (const task of tasks) {
-      const user = await prisma.user.findUnique({ where: { id: task.userId } });
-      (task as any).user = user;
-    }
-
-    for (const task of tasks) {
-      const assignments = await prisma.taskAssignment.findMany({
-        where: { taskId: task.id },
-      });
-      
-      for (const assignment of assignments) {
-        const assignee = await prisma.user.findUnique({
-          where: { id: assignment.userId },
-        });
-        (assignment as any).user = assignee;
-      }
-      
-      (task as any).assignments = assignments;
-    }
-  }
+  const tasks = await prisma.task.findMany({
+    where: {
+      userId,
+      ...(status && { status: status as string }),
+      ...(priority && { priority: priority as string }),
+      ...(search && {
+        OR: [
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { description: { contains: search as string, mode: 'insensitive' } },
+        ],
+      }),
+    },
+    include: taskInclude,
+    orderBy: { createdAt: 'desc' },
+  });
 
   res.json(tasks);
 };
@@ -47,7 +48,27 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
 export const createTask = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { title, description, status, priority } = req.body;
+    
+    const validationResult = createTaskSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors;
+      const titleError = errors.find(err => err.path.includes('title'));
+      
+      if (titleError) {
+        return res.status(400).json({ 
+          error: 'Title is required',
+          message: 'Please enter a title for the task'
+        });
+      }
+      
+      return res.status(400).json({ 
+        error: 'Validation error',
+        details: errors.map(err => ({ field: err.path.join('.'), message: err.message }))
+      });
+    }
+
+    const { title, description, status, priority, assigneeIds, tagIds } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -60,7 +81,18 @@ export const createTask = async (req: AuthRequest, res: Response) => {
         status: status || 'TODO',
         priority: priority || 'MEDIUM',
         userId: userId!,
+        ...(Array.isArray(assigneeIds) && assigneeIds.length > 0 && {
+          assignments: {
+            create: assigneeIds.map((uid: string) => ({ userId: uid })),
+          },
+        }),
+        ...(Array.isArray(tagIds) && tagIds.length > 0 && {
+          tags: {
+            create: tagIds.map((tid: string) => ({ tagId: tid })),
+          },
+        }),
       },
+      include: taskInclude,
     });
 
     res.status(201).json(task);
@@ -73,9 +105,9 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority } = req.body;
+    const { title, description, status, priority, assigneeIds, tagIds } = req.body;
 
-    const task = await prisma.task.update({
+    await prisma.task.update({
       where: { id },
       data: {
         ...(title && { title }),
@@ -83,6 +115,29 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
         ...(status && { status }),
         ...(priority && { priority }),
       },
+    });
+
+    if (Array.isArray(assigneeIds)) {
+      await prisma.taskAssignment.deleteMany({ where: { taskId: id } });
+      if (assigneeIds.length > 0) {
+        await prisma.taskAssignment.createMany({
+          data: assigneeIds.map((uid: string) => ({ taskId: id, userId: uid })),
+        });
+      }
+    }
+
+    if (Array.isArray(tagIds)) {
+      await prisma.taskTag.deleteMany({ where: { taskId: id } });
+      if (tagIds.length > 0) {
+        await prisma.taskTag.createMany({
+          data: tagIds.map((tid: string) => ({ taskId: id, tagId: tid })),
+        });
+      }
+    }
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: taskInclude,
     });
 
     res.json(task);
@@ -96,9 +151,8 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    await prisma.task.delete({
-      where: { id },
-    });
+    await prisma.taskAssignment.deleteMany({ where: { taskId: id } });
+    await prisma.task.delete({ where: { id } });
 
     res.status(204).send();
   } catch (error) {
@@ -114,40 +168,10 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            username: true,
-            name: true,
-          },
-        },
-        assignments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                username: true,
-                name: true,
-              },
-            },
-          },
-        },
+        ...taskInclude,
         comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                username: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
+          include: { user: { select: userSelect } },
+          orderBy: { createdAt: 'desc' },
         },
       },
     });
