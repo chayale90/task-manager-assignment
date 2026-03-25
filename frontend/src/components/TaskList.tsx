@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Pencil, Trash2, Check, X } from 'lucide-react';
+import { Pencil, Trash2, Check, X, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, Input, Button, Select, MultiSelect } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
+import { TaskDetailModal } from './TaskDetailModal';
 import { useUsers } from '../hooks/useUsers';
+import { useAuth } from '../hooks/useAuth';
 import type { Task, TaskAssignment, TaskFormData } from '../types';
 
 interface TaskListProps {
@@ -97,7 +99,9 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const { users, loading: usersLoading } = useUsers();
+  const { user } = useAuth();
 
   const userOptions = users.map((u) => ({
     value: u.id,
@@ -163,8 +167,11 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
     return <TaskListSkeleton count={5} />;
   }
 
+  const detailTask = tasks.find(t => t.id === detailTaskId) || null;
+
   return (
-    <div className="space-y-3">
+    <>
+      <div className="space-y-3">
       {tasks.map((task) => (
         <Card
           key={task.id}
@@ -293,6 +300,13 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
               {/* Icon action buttons */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
+                  onClick={() => setDetailTaskId(task.id)}
+                  className="p-1.5 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10 transition-colors"
+                  title="View Comments"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => handleEditClick(task)}
                   className="p-1.5 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10 transition-colors"
                   title="Edit"
@@ -311,6 +325,13 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
           )}
         </Card>
       ))}
-    </div>
+      </div>
+
+      <TaskDetailModal
+        task={detailTask}
+        currentUser={user}
+        onClose={() => setDetailTaskId(null)}
+      />
+    </>
   );
 };
