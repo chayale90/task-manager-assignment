@@ -14,9 +14,12 @@ export const useTasks = (filters?: TaskFilters) => {
   const [loading, setLoading] = useState(true);
   const pendingDeletionsRef = useRef<Map<string, PendingDeletion>>(new Map());
 
+  const filtersKey = JSON.stringify(filters ?? {});
+
   useEffect(() => {
     fetchTasks();
-  }, [filters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {

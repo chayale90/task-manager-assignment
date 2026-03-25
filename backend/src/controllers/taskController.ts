@@ -24,12 +24,19 @@ const taskInclude = {
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { status } = req.query;
+  const { status, priority, search } = req.query;
 
   const tasks = await prisma.task.findMany({
     where: {
       userId,
       ...(status && { status: status as string }),
+      ...(priority && { priority: priority as string }),
+      ...(search && {
+        OR: [
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { description: { contains: search as string, mode: 'insensitive' } },
+        ],
+      }),
     },
     include: taskInclude,
     orderBy: { createdAt: 'desc' },

@@ -61,6 +61,7 @@ export type { RegisterData } from '@shared/schemas/auth';
 export interface TaskFilters {
   status?: string;
   priority?: string;
+  search?: string;
   [key: string]: string | undefined;
 }
 
