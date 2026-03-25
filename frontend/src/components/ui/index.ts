@@ -12,3 +12,6 @@ export type { ModalProps } from './Modal';
 
 export { Select } from './Select';
 export type { SelectProps } from './Select';
+
+export { MultiSelect } from './MultiSelect';
+export type { MultiSelectProps, MultiSelectOption } from './MultiSelect';

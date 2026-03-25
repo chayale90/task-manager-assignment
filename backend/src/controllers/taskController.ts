@@ -4,52 +4,35 @@ import { AuthRequest } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
+const userSelect = {
+  id: true,
+  email: true,
+  username: true,
+  name: true,
+} as const;
+
+const taskInclude = {
+  user: { select: userSelect },
+  assignments: {
+    include: { user: { select: userSelect } },
+  },
+  tags: {
+    include: { tag: true },
+  },
+} as const;
+
 export const getTasks = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { search, status } = req.query;
+  const { status } = req.query;
 
-  let tasks;
-  if (search) {
-    const query = `SELECT * FROM Task WHERE userId = '${userId}' AND (title LIKE '%${search}%' OR description LIKE '%${search}%')`;
-    tasks = await prisma.$queryRawUnsafe(query);
-  } else {
-    tasks = await prisma.task.findMany({
-      where: {
-        userId,
-        ...(status && { status: status as string }),
-      },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
-      orderBy:{
-        createdAt:'desc'
-      }
-    });
-
-    for (const task of tasks) {
-      const user = await prisma.user.findUnique({ where: { id: task.userId } });
-      (task as any).user = user;
-    }
-
-    for (const task of tasks) {
-      const assignments = await prisma.taskAssignment.findMany({
-        where: { taskId: task.id },
-      });
-      
-      for (const assignment of assignments) {
-        const assignee = await prisma.user.findUnique({
-          where: { id: assignment.userId },
-        });
-        (assignment as any).user = assignee;
-      }
-      
-      (task as any).assignments = assignments;
-    }
-  }
+  const tasks = await prisma.task.findMany({
+    where: {
+      userId,
+      ...(status && { status: status as string }),
+    },
+    include: taskInclude,
+    orderBy: { createdAt: 'desc' },
+  });
 
   res.json(tasks);
 };
@@ -57,7 +40,7 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
 export const createTask = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { title, description, status, priority } = req.body;
+    const { title, description, status, priority, assigneeIds } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -70,7 +53,13 @@ export const createTask = async (req: AuthRequest, res: Response) => {
         status: status || 'TODO',
         priority: priority || 'MEDIUM',
         userId: userId!,
+        ...(Array.isArray(assigneeIds) && assigneeIds.length > 0 && {
+          assignments: {
+            create: assigneeIds.map((uid: string) => ({ userId: uid })),
+          },
+        }),
       },
+      include: taskInclude,
     });
 
     res.status(201).json(task);
@@ -83,9 +72,9 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority } = req.body;
+    const { title, description, status, priority, assigneeIds } = req.body;
 
-    const task = await prisma.task.update({
+    await prisma.task.update({
       where: { id },
       data: {
         ...(title && { title }),
@@ -93,6 +82,20 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
         ...(status && { status }),
         ...(priority && { priority }),
       },
+    });
+
+    if (Array.isArray(assigneeIds)) {
+      await prisma.taskAssignment.deleteMany({ where: { taskId: id } });
+      if (assigneeIds.length > 0) {
+        await prisma.taskAssignment.createMany({
+          data: assigneeIds.map((uid: string) => ({ taskId: id, userId: uid })),
+        });
+      }
+    }
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: taskInclude,
     });
 
     res.json(task);
@@ -106,9 +109,8 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    await prisma.task.delete({
-      where: { id },
-    });
+    await prisma.taskAssignment.deleteMany({ where: { taskId: id } });
+    await prisma.task.delete({ where: { id } });
 
     res.status(204).send();
   } catch (error) {
@@ -124,40 +126,10 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            username: true,
-            name: true,
-          },
-        },
-        assignments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                username: true,
-                name: true,
-              },
-            },
-          },
-        },
+        ...taskInclude,
         comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                username: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
+          include: { user: { select: userSelect } },
+          orderBy: { createdAt: 'desc' },
         },
       },
     });

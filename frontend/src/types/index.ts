@@ -69,5 +69,6 @@ export interface TaskFormData {
   description: string;
   status: string;
   priority: string;
+  assigneeIds?: string[];
 }
 

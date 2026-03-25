@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Input, Button, Select } from './ui';
+import { Input, Button, Select, MultiSelect } from './ui';
+import { useUsers } from '../hooks/useUsers';
 import type { Task, TaskFormData } from '../types';
 
 interface TaskFormProps {
@@ -11,11 +12,17 @@ interface TaskFormProps {
 const textareaStyles = 'w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900';
 
 export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
+  const { users, loading: usersLoading } = useUsers();
+
+  const initialAssigneeIds =
+    initialData?.assignments?.map((a) => a.userId) ?? [];
+
   const [formData, setFormData] = useState<TaskFormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
     status: initialData?.status || 'TODO',
     priority: initialData?.priority || 'MEDIUM',
+    assigneeIds: initialAssigneeIds,
   });
 
   const handleChange = (
@@ -28,10 +35,19 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
     });
   };
 
+  const handleAssigneesChange = (ids: string[]) => {
+    setFormData({ ...formData, assigneeIds: ids });
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(formData);
   };
+
+  const userOptions = users.map((u) => ({
+    value: u.id,
+    label: u.name || u.username,
+  }));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,6 +94,15 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
           <option value="HIGH">High</option>
         </Select>
       </div>
+      <MultiSelect
+        label="Assignees"
+        options={userOptions}
+        value={formData.assigneeIds ?? []}
+        onChange={handleAssigneesChange}
+        placeholder="Assign team members..."
+        loading={usersLoading}
+        className="z-[100]"
+      />
       <Button type="submit" className="w-full">
         {initialData ? 'Update Task' : 'Create Task'}
       </Button>

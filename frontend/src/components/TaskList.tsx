@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, Input, Button, Select } from './ui';
+import { Card, Input, Button, Select, MultiSelect } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
-import type { Task, TaskFormData } from '../types';
+import { useUsers } from '../hooks/useUsers';
+import type { Task, TaskAssignment, TaskFormData } from '../types';
 
 interface TaskListProps {
   tasks: Task[];
@@ -37,10 +38,71 @@ const statusLabel: Record<string, string> = {
   DONE: 'Done',
 };
 
+const AVATAR_COLORS = [
+  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b',
+  '#10b981', '#3b82f6', '#ef4444', '#14b8a6',
+];
+
+const getAvatarColor = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
+
+const getInitials = (name?: string | null, username?: string) => {
+  const source = name || username || '?';
+  const parts = source.trim().split(/\s+/);
+  return parts.length >= 2
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : source.slice(0, 2).toUpperCase();
+};
+
+const MAX_VISIBLE = 4;
+
+const AssigneeAvatarGroup = ({ assignments }: { assignments: TaskAssignment[] }) => {
+  const visible = assignments.slice(0, MAX_VISIBLE);
+  const overflow = assignments.length - MAX_VISIBLE;
+
+  return (
+    <div className="flex items-center mt-2">
+      <div className="flex -space-x-2">
+        {visible.map((a) => {
+          const color = getAvatarColor(a.userId);
+          const initials = getInitials(a.user?.name, a.user?.username);
+          return (
+            <div
+              key={a.id}
+              title={a.user?.name || a.user?.username || a.userId}
+              className="relative w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold ring-2 ring-white dark:ring-slate-900 flex-shrink-0 cursor-pointer transition-all duration-200 hover:scale-110 hover:z-10 hover:ring-indigo-200 dark:hover:ring-indigo-800"
+              style={{ backgroundColor: color }}
+            >
+              {initials}
+            </div>
+          );
+        })}
+        {overflow > 0 && (
+          <div
+            title={`${overflow} more assignee${overflow > 1 ? 's' : ''}`}
+            className="relative w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ring-2 ring-white dark:ring-slate-900 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex-shrink-0 cursor-pointer transition-all duration-200 hover:scale-110 hover:z-10 hover:bg-slate-300 dark:hover:bg-slate-600"
+          >
+            +{overflow}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { users, loading: usersLoading } = useUsers();
+
+  const userOptions = users.map((u) => ({
+    value: u.id,
+    label: u.name || u.username,
+  }));
 
   const handleEditClick = (task: Task) => {
     setEditingId(task.id);
@@ -49,6 +111,7 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
       description: task.description || '',
       status: task.status,
       priority: task.priority,
+      assigneeIds: task.assignments?.map((a) => a.userId) ?? [],
     });
   };
 
@@ -73,6 +136,10 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
       ...editFormData,
       [field]: value,
     });
+  };
+
+  const handleAssigneesChange = (ids: string[]) => {
+    setEditFormData({ ...editFormData, assigneeIds: ids });
   };
 
   const handleDelete = async (id: string) => {
@@ -145,6 +212,15 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
                   <option value="HIGH">High</option>
                 </Select>
               </div>
+              <MultiSelect
+                label="Assignees"
+                options={userOptions}
+                value={editFormData.assigneeIds ?? []}
+                onChange={handleAssigneesChange}
+                placeholder="Assign team members..."
+                loading={usersLoading}
+                className="z-[100]"
+              />
               <div className="flex gap-2 justify-end">
                 <Button variant="secondary" size="sm" onClick={handleCancelEdit}>
                   <X className="w-4 h-4 mr-1" />
@@ -176,10 +252,9 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
                   {task.title}
                 </h3>
                 {task.description && (
-                  <p
-                    className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2"
-                    dangerouslySetInnerHTML={{ __html: task.description }}
-                  />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                    {task.description}
+                  </p>
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[task.status] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
@@ -207,6 +282,12 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
                     </span>
                   ))}
                 </div>
+                {/* Avatar Group for assignees */}
+                {task.assignments && task.assignments.length > 0 && (
+                  <div className="animate-in fade-in duration-300">
+                    <AssigneeAvatarGroup assignments={task.assignments} />
+                  </div>
+                )}
               </div>
 
               {/* Icon action buttons */}
