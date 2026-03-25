@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, Input, Button } from './ui';
+import { Card, Input, Button, Select } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
 import type { Task, TaskFormData } from '../types';
 
@@ -126,30 +126,24 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListPro
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Status</label>
-                  <select
-                    value={editFormData.status ?? ''}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
-                  >
-                    <option value="TODO">Todo</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="DONE">Done</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Priority</label>
-                  <select
-                    value={editFormData.priority ?? ''}
-                    onChange={(e) => handleInputChange('priority', e.target.value)}
-                    className="w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
-                </div>
+                <Select
+                  label="Status"
+                  value={editFormData.status ?? ''}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                >
+                  <option value="TODO">Todo</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="DONE">Done</option>
+                </Select>
+                <Select
+                  label="Priority"
+                  value={editFormData.priority ?? ''}
+                  onChange={(e) => handleInputChange('priority', e.target.value)}
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </Select>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="secondary" size="sm" onClick={handleCancelEdit}>

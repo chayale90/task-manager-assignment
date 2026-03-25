@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Input, Button } from './ui';
+import { Input, Button, Select } from './ui';
 import type { Task, TaskFormData } from '../types';
 
 interface TaskFormProps {
@@ -8,7 +8,7 @@ interface TaskFormProps {
   initialData?: Partial<Task>;
 }
 
-const selectStyles = 'w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900';
+const textareaStyles = 'w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900';
 
 export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
   const [formData, setFormData] = useState<TaskFormData>({
@@ -51,38 +51,32 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className={selectStyles}
+          className={textareaStyles}
           rows={3}
           placeholder="Add some details..."
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Status</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className={selectStyles}
-          >
-            <option value="TODO">Todo</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="DONE">Done</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Priority</label>
-          <select
-            name="priority"
-            value={formData.priority}
-            onChange={handleChange}
-            className={selectStyles}
-          >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-          </select>
-        </div>
+        <Select
+          label="Status"
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+        >
+          <option value="TODO">Todo</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="DONE">Done</option>
+        </Select>
+        <Select
+          label="Priority"
+          name="priority"
+          value={formData.priority}
+          onChange={handleChange}
+        >
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+        </Select>
       </div>
       <Button type="submit" className="w-full">
         {initialData ? 'Update Task' : 'Create Task'}
