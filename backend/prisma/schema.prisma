@@ -76,7 +76,7 @@ model Comment {
 
 model Tag {
   id        String   @id @default(cuid())
-  name      String
+  name      String   @unique
   color     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Input, Button, Select, MultiSelect } from './ui';
-import type { Task, TaskFormData, User } from '../types';
+import type { Task, TaskFormData, User, Tag } from '../types';
 import { toast } from 'sonner';
 
 interface TaskFormProps {
@@ -9,14 +9,18 @@ interface TaskFormProps {
   initialData?: Partial<Task>;
   users: User[];
   usersLoading: boolean;
+  tags: Tag[];
+  tagsLoading: boolean;
 }
 
 const textareaStyles = 'w-full rounded-lg shadow-sm px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900';
 
-export const TaskForm = ({ onSubmit, initialData, users, usersLoading }: TaskFormProps) => {
+export const TaskForm = ({ onSubmit, initialData, users, usersLoading, tags, tagsLoading }: TaskFormProps) => {
 
   const initialAssigneeIds =
     initialData?.assignments?.map((a) => a.userId) ?? [];
+
+  const initialTagIds = initialData?.tags?.map((t) => t.tagId) ?? [];
 
   const [formData, setFormData] = useState<TaskFormData>({
     title: initialData?.title || '',
@@ -24,6 +28,7 @@ export const TaskForm = ({ onSubmit, initialData, users, usersLoading }: TaskFor
     status: initialData?.status || 'TODO',
     priority: initialData?.priority || 'MEDIUM',
     assigneeIds: initialAssigneeIds,
+    tagIds: initialTagIds,
   });
 
   const [titleError, setTitleError] = useState<string>('');
@@ -46,6 +51,10 @@ export const TaskForm = ({ onSubmit, initialData, users, usersLoading }: TaskFor
     setFormData({ ...formData, assigneeIds: ids });
   };
 
+  const handleTagsChange = (ids: string[]) => {
+    setFormData({ ...formData, tagIds: ids });
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -62,6 +71,11 @@ export const TaskForm = ({ onSubmit, initialData, users, usersLoading }: TaskFor
   const userOptions = users.map((u) => ({
     value: u.id,
     label: u.name || u.username,
+  }));
+
+  const tagOptions = tags.map((t) => ({
+    value: t.id,
+    label: t.name,
   }));
 
   return (
@@ -115,6 +129,15 @@ export const TaskForm = ({ onSubmit, initialData, users, usersLoading }: TaskFor
           <option value="HIGH">High</option>
         </Select>
       </div>
+      <MultiSelect
+        label="Categories"
+        options={tagOptions}
+        value={formData.tagIds ?? []}
+        onChange={handleTagsChange}
+        placeholder="Select categories..."
+        loading={tagsLoading}
+        className="z-[100]"
+      />
       <MultiSelect
         label="Assignees"
         options={userOptions}

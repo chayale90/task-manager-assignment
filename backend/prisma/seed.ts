@@ -44,29 +44,37 @@ async function main() {
   });
 
   // Create tags
-  const tag1 = await prisma.tag.create({
-    data: {
+  const tag1 = await prisma.tag.upsert({
+    where: { name: 'Frontend' },
+    update: {},
+    create: {
       name: 'Frontend',
       color: '#3B82F6',
     },
   });
 
-  const tag2 = await prisma.tag.create({
-    data: {
+  const tag2 = await prisma.tag.upsert({
+    where: { name: 'Backend' },
+    update: {},
+    create: {
       name: 'Backend',
       color: '#10B981',
     },
   });
 
-  const tag3 = await prisma.tag.create({
-    data: {
+  const tag3 = await prisma.tag.upsert({
+    where: { name: 'Urgent' },
+    update: {},
+    create: {
       name: 'Urgent',
       color: '#EF4444',
     },
   });
 
-  const tag4 = await prisma.tag.create({
-    data: {
+  const tag4 = await prisma.tag.upsert({
+    where: { name: 'Bug' },
+    update: {},
+    create: {
       name: 'Bug',
       color: '#F59E0B',
     },

@@ -10,6 +10,7 @@ import { Button, Card } from '../components/ui';
 import { useTasks } from '../hooks/useTasks';
 import { useAuth } from '../hooks/useAuth';
 import { useUsers } from '../hooks/useUsers';
+import { useTags } from '../hooks/useTags';
 import type { TaskFilters, TaskFormData } from '../types';
 
 export const Dashboard = () => {
@@ -18,6 +19,7 @@ export const Dashboard = () => {
   const { tasks, loading, createTask, updateTask, deleteTask, restoreTask } = useTasks(filters);
   const { logout, user } = useAuth();
   const { users, loading: usersLoading } = useUsers();
+  const { tags, loading: tagsLoading } = useTags();
   const navigate = useNavigate();
 
   const handleCreateTask = async (taskData: TaskFormData) => {
@@ -70,6 +72,8 @@ export const Dashboard = () => {
               onSubmit={handleCreateTask}
               users={users}
               usersLoading={usersLoading}
+              tags={tags}
+              tagsLoading={tagsLoading}
             />
           </Card>
         </div>
@@ -86,6 +90,8 @@ export const Dashboard = () => {
             restoreTask={restoreTask}
             users={users}
             usersLoading={usersLoading}
+            tags={tags}
+            tagsLoading={tagsLoading}
           />
         )}
       </div>

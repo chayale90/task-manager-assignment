@@ -70,5 +70,6 @@ export interface TaskFormData {
   status: string;
   priority: string;
   assigneeIds?: string[];
+  tagIds?: string[];
 }
 

@@ -61,7 +61,11 @@ export const createTask = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const { title, description, status, priority, assigneeIds } = validationResult.data;
+    const { title, description, status, priority, assigneeIds, tagIds } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
 
     const task = await prisma.task.create({
       data: {
@@ -73,6 +77,11 @@ export const createTask = async (req: AuthRequest, res: Response) => {
         ...(Array.isArray(assigneeIds) && assigneeIds.length > 0 && {
           assignments: {
             create: assigneeIds.map((uid: string) => ({ userId: uid })),
+          },
+        }),
+        ...(Array.isArray(tagIds) && tagIds.length > 0 && {
+          tags: {
+            create: tagIds.map((tid: string) => ({ tagId: tid })),
           },
         }),
       },
@@ -89,7 +98,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, assigneeIds } = req.body;
+    const { title, description, status, priority, assigneeIds, tagIds } = req.body;
 
     await prisma.task.update({
       where: { id },
@@ -106,6 +115,15 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
       if (assigneeIds.length > 0) {
         await prisma.taskAssignment.createMany({
           data: assigneeIds.map((uid: string) => ({ taskId: id, userId: uid })),
+        });
+      }
+    }
+
+    if (Array.isArray(tagIds)) {
+      await prisma.taskTag.deleteMany({ where: { taskId: id } });
+      if (tagIds.length > 0) {
+        await prisma.taskTag.createMany({
+          data: tagIds.map((tid: string) => ({ taskId: id, tagId: tid })),
         });
       }
     }

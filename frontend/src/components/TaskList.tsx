@@ -5,7 +5,7 @@ import { Card, Input, Button, Select, MultiSelect } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
 import { TaskDetailModal } from './TaskDetailModal';
 import { useAuth } from '../hooks/useAuth';
-import type { Task, TaskAssignment, TaskFormData, User } from '../types';
+import type { Task, TaskAssignment, TaskFormData, User, Tag } from '../types';
 
 interface TaskListProps {
   tasks: Task[];
@@ -15,6 +15,8 @@ interface TaskListProps {
   restoreTask: (id: string) => void;
   users: User[];
   usersLoading: boolean;
+  tags: Tag[];
+  tagsLoading: boolean;
 }
 
 const priorityAccent: Record<string, string> = {
@@ -96,7 +98,7 @@ const AssigneeAvatarGroup = ({ assignments }: { assignments: TaskAssignment[] })
   );
 };
 
-export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersLoading }: TaskListProps) => {
+export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersLoading, tags, tagsLoading }: TaskListProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -108,6 +110,11 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
     label: u.name || u.username,
   }));
 
+  const tagOptions = tags.map((t) => ({
+    value: t.id,
+    label: t.name,
+  }));
+
   const handleEditClick = (task: Task) => {
     setEditingId(task.id);
     setEditFormData({
@@ -116,6 +123,7 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
       status: task.status,
       priority: task.priority,
       assigneeIds: task.assignments?.map((a) => a.userId) ?? [],
+      tagIds: task.tags?.map((t) => t.tagId) ?? [],
     });
   };
 
@@ -144,6 +152,10 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
 
   const handleAssigneesChange = (ids: string[]) => {
     setEditFormData({ ...editFormData, assigneeIds: ids });
+  };
+
+  const handleTagsChange = (ids: string[]) => {
+    setEditFormData({ ...editFormData, tagIds: ids });
   };
 
   const handleDelete = async (id: string) => {
@@ -219,6 +231,15 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
                   <option value="HIGH">High</option>
                 </Select>
               </div>
+              <MultiSelect
+                label="Categories"
+                options={tagOptions}
+                value={editFormData.tagIds ?? []}
+                onChange={handleTagsChange}
+                placeholder="Select categories..."
+                loading={tagsLoading}
+                className="z-[100]"
+              />
               <MultiSelect
                 label="Assignees"
                 options={userOptions}
