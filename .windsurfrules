@@ -1,0 +1,11 @@
+# UI & Design System Rules
+- ALWAYS check `frontend/src/components/ui` before creating any UI element.
+- NEVER use raw HTML tags like `<button>`, `<input>`, or `<a>` for primary UI elements.
+- ALWAYS use our custom Design System components: `Button`, `Input`, `Card`, `Badge`, `Modal`, etc.
+- If a component is missing a variant, extend the existing component instead of creating a new one.
+- Use Tailwind CSS with our specific design tokens (Indigo primary, Slate for borders/text).
+- All new UI should support Dark Mode by default using Tailwind's `dark:` classes.
+
+# Technical Preferences
+- Use `@/components/ui/...` for imports (assuming path aliases are set).
+- Maintain consistent spacing and padding following our existing layout.
