@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { createTaskSchema, updateTaskSchema } from '../../../shared/schemas/task';
 
 const prisma = new PrismaClient();
 
@@ -40,11 +41,27 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
 export const createTask = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    const { title, description, status, priority, assigneeIds } = req.body;
-
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    
+    const validationResult = createTaskSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors;
+      const titleError = errors.find(err => err.path.includes('title'));
+      
+      if (titleError) {
+        return res.status(400).json({ 
+          error: 'Title is required',
+          message: 'Please enter a title for the task'
+        });
+      }
+      
+      return res.status(400).json({ 
+        error: 'Validation error',
+        details: errors.map(err => ({ field: err.path.join('.'), message: err.message }))
+      });
     }
+
+    const { title, description, status, priority, assigneeIds } = validationResult.data;
 
     const task = await prisma.task.create({
       data: {

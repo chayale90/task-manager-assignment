@@ -62,8 +62,9 @@ export const useTasks = (filters?: TaskFilters) => {
       setTasks([newTask, ...tasks]);
       toast.success('Task created successfully');
       return newTask;
-    } catch (error) {
-      toast.error('Failed to create task. Please try again.');
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || 'Failed to create task. Please try again.';
+      toast.error(errorMessage);
       throw error;
     }
   };

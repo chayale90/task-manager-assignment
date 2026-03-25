@@ -4,9 +4,8 @@ import { toast } from 'sonner';
 import { Card, Input, Button, Select, MultiSelect } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
 import { TaskDetailModal } from './TaskDetailModal';
-import { useUsers } from '../hooks/useUsers';
 import { useAuth } from '../hooks/useAuth';
-import type { Task, TaskAssignment, TaskFormData } from '../types';
+import type { Task, TaskAssignment, TaskFormData, User } from '../types';
 
 interface TaskListProps {
   tasks: Task[];
@@ -14,6 +13,8 @@ interface TaskListProps {
   deleteTask: (id: string) => Promise<void>;
   updateTask: (id: string, taskData: Partial<TaskFormData>) => Promise<Task>;
   restoreTask: (id: string) => void;
+  users: User[];
+  usersLoading: boolean;
 }
 
 const priorityAccent: Record<string, string> = {
@@ -95,12 +96,11 @@ const AssigneeAvatarGroup = ({ assignments }: { assignments: TaskAssignment[] })
   );
 };
 
-export const TaskList = ({ tasks, loading, deleteTask, updateTask }: TaskListProps) => {
+export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersLoading }: TaskListProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<TaskFormData>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
-  const { users, loading: usersLoading } = useUsers();
   const { user } = useAuth();
 
   const userOptions = users.map((u) => ({
