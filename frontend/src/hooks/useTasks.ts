@@ -59,7 +59,7 @@ export const useTasks = (filters?: TaskFilters) => {
   const createTask = async (taskData: TaskFormData) => {
     try {
       const newTask = await api.post<Task>('/tasks', taskData);
-      setTasks([...tasks, newTask]);
+      setTasks([newTask, ...tasks]);
       toast.success('Task created successfully');
       return newTask;
     } catch (error) {

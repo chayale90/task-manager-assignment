@@ -63,7 +63,7 @@ export const Dashboard = () => {
           }`}
         >
           <Card>
-            <TaskForm onSubmit={handleCreateTask} />
+            <TaskForm key={showForm ? 'open' : 'closed'} onSubmit={handleCreateTask} />
           </Card>
         </div>
 
