@@ -88,7 +88,7 @@ export const useTasks = (filters?: TaskFilters) => {
     try {
       await api.delete(`/tasks/${id}`);
       pendingDeletionsRef.current.delete(id);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete task:', error);
       const pending = pendingDeletionsRef.current.get(id);
       if (pending) {
@@ -96,7 +96,13 @@ export const useTasks = (filters?: TaskFilters) => {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
         pendingDeletionsRef.current.delete(id);
-        toast.error('Failed to delete task. Task restored.');
+        
+        // Check if it's a permission error
+        if (error?.response?.status === 403) {
+          toast.error('Only the task owner can delete this task');
+        } else {
+          toast.error('Failed to delete task. Task restored.');
+        }
       }
     }
   };

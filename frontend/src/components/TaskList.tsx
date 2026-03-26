@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Trash2, Check, X, MessageSquare } from 'lucide-react';
+import { Pencil, Trash2, Check, X, MessageSquare, Crown, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, Input, Button, Select, MultiSelect } from './ui';
 import { TaskListSkeleton } from './TaskSkeleton';
@@ -276,9 +276,21 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
               </button>
 
               <div className="flex-1 min-w-0">
-                <h3 className={`font-medium text-slate-900 dark:text-white ${task.status === 'DONE' ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
-                  {task.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className={`font-medium text-slate-900 dark:text-white ${task.status === 'DONE' ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
+                    {task.title}
+                  </h3>
+                  {/* Owner/Assignee indicator */}
+                  {task.userId === user?.id ? (
+                    <div title="You own this task">
+                      <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" />
+                    </div>
+                  ) : task.assignments?.some(a => a.userId === user?.id) ? (
+                    <div title="Assigned to you">
+                      <UserIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
+                    </div>
+                  ) : null}
+                </div>
                 {task.description && (
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                     {task.description}
@@ -334,13 +346,16 @@ export const TaskList = ({ tasks, loading, deleteTask, updateTask, users, usersL
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-500/10 transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {/* Only show delete button if user is the owner */}
+                {task.userId === user?.id && (
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-500/10 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           )}

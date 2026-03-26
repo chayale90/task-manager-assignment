@@ -45,6 +45,7 @@ export interface Task {
   projectId?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
   user?: User;
   assignments?: TaskAssignment[];
   comments?: Comment[];
