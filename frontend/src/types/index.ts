@@ -45,6 +45,7 @@ export interface Task {
   projectId?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
   user?: User;
   assignments?: TaskAssignment[];
   comments?: Comment[];
@@ -52,7 +53,6 @@ export interface Task {
 }
 
 export interface AuthResponse {
-  token: string;
   user: User;
 }
 
@@ -72,5 +72,12 @@ export interface TaskFormData {
   priority: string;
   assigneeIds?: string[];
   tagIds?: string[];
+}
+
+export interface AiSuggestion {
+  description: string;
+  priority: string;
+  tags: string[];
+  estimatedTime: string;
 }
 

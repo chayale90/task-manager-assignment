@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { createActivity } from '../services/activityService';
 
 const prisma = new PrismaClient();
 
@@ -40,6 +41,13 @@ export const createComment = async (req: AuthRequest, res: Response) => {
           },
         },
       },
+    });
+
+    await createActivity({
+      taskId,
+      userId: userId!,
+      type: 'COMMENT_ADDED',
+      description: 'added a comment',
     });
 
     res.status(201).json(comment);

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Modal } from './ui';
 import { CommentList } from './CommentList';
+import { ActivityFeed } from './ActivityFeed';
 import type { Task, User } from '../types';
 
 interface TaskDetailModalProps {
@@ -46,6 +48,8 @@ const getInitials = (name?: string | null, username?: string) => {
 };
 
 export const TaskDetailModal = ({ task, currentUser, onClose }: TaskDetailModalProps) => {
+  const [activeTab, setActiveTab] = useState<'comments' | 'activity'>('comments');
+
   if (!task) return null;
 
   return (
@@ -128,12 +132,43 @@ export const TaskDetailModal = ({ task, currentUser, onClose }: TaskDetailModalP
         {/* Divider */}
         <div className="border-t border-slate-200 dark:border-slate-700"></div>
 
-        {/* Comments Section */}
+        {/* Tabs */}
         <div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            Comments
-          </h3>
-          <CommentList taskId={task.id} currentUser={currentUser} />
+          <div className="flex gap-4 border-b border-slate-200 dark:border-slate-700 mb-4">
+            <button
+              onClick={() => setActiveTab('comments')}
+              className={`pb-3 px-1 text-sm font-medium transition-colors relative ${
+                activeTab === 'comments'
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              Comments
+              {activeTab === 'comments' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('activity')}
+              className={`pb-3 px-1 text-sm font-medium transition-colors relative ${
+                activeTab === 'activity'
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              Activity
+              {activeTab === 'activity' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>
+              )}
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'comments' ? (
+            <CommentList taskId={task.id} currentUser={currentUser} />
+          ) : (
+            <ActivityFeed taskId={task.id} />
+          )}
         </div>
       </div>
     </Modal>

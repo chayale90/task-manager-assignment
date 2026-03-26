@@ -8,11 +8,10 @@ interface ApiError {
 export const api = {
   async get<T = unknown>(endpoint: string): Promise<T> {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}${endpoint}`, {
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
       
@@ -32,12 +31,11 @@ export const api = {
 
   async post<T = unknown>(endpoint: string, data: unknown): Promise<T> {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(data),
       });
@@ -58,12 +56,11 @@ export const api = {
 
   async put<T = unknown>(endpoint: string, data: unknown): Promise<T> {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(data),
       });
@@ -84,12 +81,11 @@ export const api = {
 
   async delete<T = unknown>(endpoint: string): Promise<T | null> {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
       
