@@ -13,7 +13,7 @@ This is a Task Management application that allows users to:
 - Add comments to tasks
 - Assign tasks to team members
 - Tag tasks for better organization
-- ✨ AI-powered task suggestions (Gemini)
+- ✨ AI-powered task suggestions 
 - 🔍 Advanced filtering and search
 - 📊 Activity tracking and audit log
 - 🌙 Dark mode support
