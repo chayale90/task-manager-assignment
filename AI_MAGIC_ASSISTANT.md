@@ -92,15 +92,20 @@ The AI Magic Assistant is an intelligent task auto-completion feature that uses 
 - Validates title is not empty
 - Catches AI API errors gracefully
 - Returns 500 with friendly message if AI fails
+- Returns 429 with Hebrew message for rate limits
 - Validates AI response structure
 - Defaults to MEDIUM priority if invalid priority returned
 
 ### Frontend
-- Validates title before API call
+- Validates title is not empty (minimum 3 characters required)
+- Magic button disabled when title < 3 characters
+- Shows error toast if user tries to submit with < 3 characters
 - Handles network errors
 - Shows user-friendly error messages via toast
+- Hebrew message for rate limits: "הקסם נח לרגע, נסי שוב בעוד דקה 🪄"
 - Gracefully handles null responses
 - Tag matching is fault-tolerant (ignores non-existent tags)
+
 
 ## Configuration
 
