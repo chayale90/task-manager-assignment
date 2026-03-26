@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
-import { registerSchema } from '@shared/schemas/auth';
+import { registerSchema } from '../schemas/auth';
 import { Card, Input, Button } from '../components/ui';
 import type { RegisterData } from '../types';
 
@@ -55,7 +55,7 @@ export const Register = () => {
     };
 
     const validationResult = registerSchema.safeParse(payload);
-    
+
     if (!validationResult.success) {
       const errors = validationResult.error.flatten().fieldErrors;
       setFieldErrors(errors as FieldErrors);

@@ -9,7 +9,7 @@ export interface TaskAssignment {
   id: string;
   taskId: string;
   userId: string;
-  user?: User; 
+  user?: User;
 }
 
 export interface Comment {
@@ -56,7 +56,7 @@ export interface AuthResponse {
   user: User;
 }
 
-export type { RegisterData } from '@shared/schemas/auth';
+export type { RegisterData } from '../schemas/auth';
 
 export interface TaskFilters {
   status?: string;
