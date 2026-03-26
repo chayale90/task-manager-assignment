@@ -2,8 +2,6 @@
 
 A full-stack Task Management application built with React, TypeScript, Node.js, and Express.
 
-> **📋 Assignment Instructions**: For complete assignment details, requirements, and submission guidelines, please see [ASSIGNMENT.md](./ASSIGNMENT.md).
-> 
 > **✨ What's New**: See [CHANGES.md](./CHANGES.md) for a detailed list of improvements and new features implemented.
 
 ## Overview
@@ -245,7 +243,6 @@ Connection string: `postgresql://taskmanager:taskmanager123@localhost:5432/taskm
 
 - **[CHANGES.md](./CHANGES.md)** - Detailed list of all improvements, new features, and architectural decisions
 - **[AI_MAGIC_ASSISTANT.md](./AI_MAGIC_ASSISTANT.md)** - Technical documentation for the AI feature
-- **[ASSIGNMENT.md](./ASSIGNMENT.md)** - Original assignment requirements
 
 ## Notes
 
