@@ -10,10 +10,10 @@ const prisma = new PrismaClient();
 export const register = async (req: AuthRequest, res: Response) => {
   try {
     const validationResult = registerSchema.safeParse(req.body);
-    
+
     if (!validationResult.success) {
       const fieldErrors = validationResult.error.flatten().fieldErrors;
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         fields: fieldErrors
       });
@@ -51,6 +51,13 @@ export const register = async (req: AuthRequest, res: Response) => {
       { expiresIn: '7d' }
     );
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     res.status(201).json({
       user: {
         id: user.id,
@@ -58,7 +65,6 @@ export const register = async (req: AuthRequest, res: Response) => {
         username: user.username,
         name: user.name,
       },
-      token,
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -101,6 +107,13 @@ export const login = async (req: AuthRequest, res: Response) => {
     { expiresIn: '7d' }
   );
 
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
   res.json({
     user: {
       id: user.id,
@@ -108,8 +121,16 @@ export const login = async (req: AuthRequest, res: Response) => {
       username: user.username,
       name: user.name,
     },
-    token,
   });
+};
+
+export const logout = async (req: AuthRequest, res: Response) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  res.json({ message: 'Logged out successfully' });
 };
 
 export const getMe = async (req: AuthRequest, res: Response) => {
