@@ -10,8 +10,8 @@ export const suggestTaskDetails = async (req: Request, res: Response) => {
 
   if (!process.env.GEMINI_API_KEY) {
     console.error('GEMINI_API_KEY is not configured');
-    return res.status(500).json({ 
-      message: 'AI service is not configured. Please contact administrator.' 
+    return res.status(500).json({
+      message: 'AI service is not configured. Please contact administrator.'
     });
   }
 
@@ -54,29 +54,31 @@ Format:
     }
 
     res.json(parsedData);
-  } catch (error: any) {
+  } catch (error) {
     console.error('AI suggestion error:', error);
+
+    const err = error as any;
     console.error('Error details:', {
-      message: error?.message,
-      status: error?.status,
-      statusText: error?.statusText,
-      errorDetails: error?.errorDetails
+      message: err?.message,
+      status: err?.status,
+      statusText: err?.statusText,
+      errorDetails: err?.errorDetails
     });
-    
+
     let errorMessage = 'AI Assistant is taking a break. Please try again in a moment.';
     let statusCode = 500;
-    
-    if (error?.status === 404) {
+
+    if (err?.status === 404) {
       errorMessage = 'AI model not found. Please check API configuration.';
-    } else if (error?.status === 401 || error?.status === 403) {
+    } else if (err?.status === 401 || err?.status === 403) {
       errorMessage = 'AI API key is invalid. Please check configuration.';
-    } else if (error?.status === 429) {
+    } else if (err?.status === 429) {
       errorMessage = 'Too many requests. The magic is resting, please try again in a minute.';
       statusCode = 429;
-    } else if (error?.message?.includes('API key')) {
+    } else if (err?.message?.includes('API key')) {
       errorMessage = 'Invalid API key. Please verify your Gemini API key.';
     }
-    
+
     res.status(statusCode).json({ message: errorMessage });
   }
 };

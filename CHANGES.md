@@ -1,32 +1,61 @@
-🛠️ Project Updates & Improvements
-1. Stability & Refactoring
-State Management Optimization: Implemented Lifting State Up to the Dashboard component. This resolved a data synchronization bug between the dashboard and task list, ensuring new tasks appear immediately without requiring a manual page refresh.
+# 🛠️ Project Updates & Improvements
 
-Database Seed Integrity: Fixed the original seed script which created duplicate tags on every execution. Refactored the logic to use Prisma’s upsert and added a cleanup utility to ensure a consistent and unique database state.
+## 1. Stability & Refactoring
 
-Full-stack Type Safety: Performed a comprehensive audit and fixed type mismatches between the Frontend and Backend, ensuring a seamless flow of data from the API to the UI.
+- **Authentication & Login Fix**: Resolved critical issues in the initial login flow and `AuthContext`. Ensured reliable persistence of user sessions and fixed redirect loops.
 
-Login & Registration Fixes: Fixed the login and redirect bug in the AuthContext. Added secure registration validation (using Zod) including email format checks and minimum password length, shared across both client and server.
+- **State Management Optimization**: Implemented *Lifting State Up* to the `Dashboard` component to resolve data synchronization issues between the dashboard and task list.
 
-Backend Ordering: Updated the getTasks query in the backend to ensure new tasks always appear at the top of the list (createdAt: 'desc').
+- **Database Seed Integrity**: Resolved a critical bug where seeding failed due to unique constraint violations (non-unique users). Refactored using Prisma's `upsert` for an idempotent state.
 
-2. New Features
-Advanced Filtering & Search (Option B): Implemented server-side filtering by status and priority, full-text search, and full state synchronization with the URL (Shareable links).
+- **Full-stack Type Safety**: Performed a comprehensive audit and fixed type mismatches between Frontend and Backend, ensuring a seamless flow of data from the API to the UI.
 
-Filter Presets: Added functionality to save filter combinations to localStorage for instant access without additional server requests.
+- **Data Persistence (PostgreSQL)**: Optimized the database schema for task management, implementing a **Soft Delete** mechanism (`deletedAt`) to ensure data auditability.
 
-Activity Feed (Option D): Built a comprehensive audit log system that tracks every task change and displays a visual history feed within the Task Detail view.
+- **Backend Ordering**: Updated queries to ensure tasks are consistently sorted (e.g., `createdAt: 'desc'`), placing new tasks at the top.
 
-Smart Undo Delete (Creative Feature): Implemented an Optimistic UI delete mechanism with a 5-second "Undo" window. This improves user experience by allowing users to revert accidental deletions before they are processed by the server.
+---
 
-3. Technical Excellence
-Cross-Stack Validation: Introduced a shared/ directory with Zod schemas used by both the Frontend and Backend, establishing a Single Source of Truth for data validation.
+## 2. New Features
 
-Dark Mode & Responsive UI: Added full support for Dark/Light modes and ensured a responsive design across all system components, maintaining high accessibility and UX standards.
+- **Advanced Filtering & Search**: Implemented server-side filtering (status, priority) and full-text search, fully synchronized with the URL for shareable filtered views.
 
-Search Debouncing: Implemented a 400ms debounce on the text search to optimize server performance and prevent request flooding during typing.
+- **Activity Feed**: Built a comprehensive audit log system that tracks every task change, displaying a visual history within the Task Detail view.
 
-💡 Architectural Decisions
-LocalStorage for Presets: Chose client-side storage for personal UI preferences to provide zero-latency responsiveness and reduce database overhead.
+- **Smart Undo Delete**: Implemented an **Optimistic UI** delete mechanism with a 5-second "Undo" window, allowing users to revert accidental actions instantly.
 
-Service-based Logging: Centralized the activity logging logic into a dedicated backend service to keep the controllers clean, modular, and maintainable.
+- **Granular Permissions**: Added logic to distinguish between Task Owners (👑) and Assignees (👤), with backend enforcement (`403 Forbidden`).
+
+---
+
+## 3. UI/UX & Design System
+
+- **Reusable Component System**: Developed a library of global, accessible Tailwind components (`Button`, `Input`, etc.). This establishes a consistent design language and accelerates development.
+
+- **Toast Notification System**: Integrated a global notification system to provide immediate visual feedback for user actions (success, error, or AI status), improving the overall app responsiveness.
+
+- **Dark Mode & Responsive UI**: Fully responsive design with native Dark/Light mode support, optimized for a seamless experience across desktop, tablet, and mobile (iPhone).
+
+---
+
+## 4. Technical Excellence & Security
+
+- **Secure Session Management**: Migrated from `localStorage` to **httpOnly Cookies** to provide high-level protection against XSS attacks.
+
+- **Single Source of Truth**: Introduced a `shared/` directory for Zod schemas, ensuring consistent validation logic for registration, task creation, and updates across the stack.
+
+- **Search Debouncing**: Implemented a 400ms debounce on search inputs to optimize server performance and reduce unnecessary API calls.
+
+---
+
+## 🚀 Highlight Feature: AI Magic Assistant
+
+**Intelligent Task Auto-Completion** powered by *Gemini 1.5 Flash*.
+
+- **Contextual Suggestions**: Analyzes the task title to generate a detailed Markdown checklist (3-5 actionable sub-tasks).
+
+- **Smart Metadata**: Automatically suggests the most appropriate priority level (Low/Medium/High) and relevant tags.
+
+- **Efficiency**: Provides realistic completion time estimates based on task complexity.
+
+- **Optimized Performance**: Uses structured prompting to ensure fast (2-4s) and consistent JSON responses.

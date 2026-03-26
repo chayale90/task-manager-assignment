@@ -3,6 +3,8 @@
 A full-stack Task Management application built with React, TypeScript, Node.js, and Express.
 
 > **📋 Assignment Instructions**: For complete assignment details, requirements, and submission guidelines, please see [ASSIGNMENT.md](./ASSIGNMENT.md).
+> 
+> **✨ What's New**: See [CHANGES.md](./CHANGES.md) for a detailed list of improvements and new features implemented.
 
 ## Overview
 
@@ -13,6 +15,12 @@ This is a Task Management application that allows users to:
 - Add comments to tasks
 - Assign tasks to team members
 - Tag tasks for better organization
+- ✨ AI-powered task suggestions (Gemini)
+- 🔍 Advanced filtering and search
+- 📊 Activity tracking and audit log
+- 🌙 Dark mode support
+
+> For a complete list of features and improvements, see [CHANGES.md](./CHANGES.md)
 
 ## Tech Stack
 
@@ -43,6 +51,7 @@ Before you begin, ensure you have the following installed:
 - npm or yarn
 - Git
 - Docker and Docker Compose (for PostgreSQL database)
+- (Optional) Gemini API Key - for AI Magic Assistant feature
 
 ## Setup Instructions
 
@@ -68,9 +77,16 @@ cp .env.example .env
 # DATABASE_URL="postgresql://taskmanager:taskmanager123@localhost:5432/taskmanager?schema=public"
 # JWT_SECRET="your-secret-key-change-in-production"
 # PORT=5000
+# GEMINI_API_KEY="your-gemini-api-key-here"  # Optional: For AI Magic Assistant
+# FRONTEND_URL="http://localhost:5173"       # Required: For CORS
 
 # Start PostgreSQL database with Docker and setup database (migrate + seed)
 npm run db:setup
+```
+
+**Note**: The `GEMINI_API_KEY` is optional. Without it, the AI Magic Assistant feature won't be available, but all other features will work normally. Get a free API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+
+```bash
 
 # Or manually:
 # Start PostgreSQL Docker container
@@ -113,15 +129,22 @@ npm install
 npm run dev
 ```
 
-The frontend will run on `http://localhost:3000`
+The frontend will run on `http://localhost:5173`
 
 ## Project Structure
 
 ```
 full-stack-home-assignment/
+├── shared/                 # Shared validation schemas (Zod)
+│   ├── schemas/
+│   │   ├── auth.ts
+│   │   └── task.ts
+│   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/     # React components
+│   │   │   ├── ui/        # Reusable design system components
+│   │   │   └── ...
 │   │   ├── pages/          # Page components
 │   │   ├── hooks/          # Custom React hooks
 │   │   ├── services/       # API service layer
@@ -146,20 +169,32 @@ full-stack-home-assignment/
 
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user (clears httpOnly cookie)
+- `GET /api/auth/me` - Get current authenticated user
 
 ### Tasks
 
+- `POST /api/tasks/suggest` - Get AI-powered task suggestions (requires auth)
 - `GET /api/tasks` - Get all tasks (with optional filters)
 - `GET /api/tasks/:id` - Get task by ID
+- `GET /api/tasks/:id/activity` - Get activity log for a task
 - `POST /api/tasks` - Create a new task
 - `PUT /api/tasks/:id` - Update a task
-- `DELETE /api/tasks/:id` - Delete a task
+- `DELETE /api/tasks/:id` - Delete a task (soft delete)
 
 ### Comments
 
 - `GET /api/comments?taskId=:id` - Get comments for a task
 - `POST /api/comments` - Create a comment
 - `DELETE /api/comments/:id` - Delete a comment
+
+### Tags
+
+- `GET /api/tags` - Get all available tags
+
+### Users
+
+- `GET /api/users` - Get all users (for task assignment)
 
 ## Default Test Users
 
@@ -206,6 +241,12 @@ Default connection details (from docker-compose.yml):
 
 Connection string: `postgresql://taskmanager:taskmanager123@localhost:5432/taskmanager?schema=public`
 
+## Additional Documentation
+
+- **[CHANGES.md](./CHANGES.md)** - Detailed list of all improvements, new features, and architectural decisions
+- **[AI_MAGIC_ASSISTANT.md](./AI_MAGIC_ASSISTANT.md)** - Technical documentation for the AI feature
+- **[ASSIGNMENT.md](./ASSIGNMENT.md)** - Original assignment requirements
+
 ## Notes
 
 - The application is set up for development. For production, ensure proper environment variables and security configurations.
@@ -224,10 +265,16 @@ Connection string: `postgresql://taskmanager:taskmanager123@localhost:5432/taskm
 
 **Port conflicts:**
 
-- Backend default: 3000 (change in `.env`)
+- Backend default: 5000 (change in `.env`)
 - Frontend default: 5173 (change in `vite.config.ts`)
 
 **Module not found errors:**
 
 - Run `npm install` in both frontend and backend directories
 - Ensure Prisma client is generated in backend
+
+**AI features not working:**
+
+- Ensure `GEMINI_API_KEY` is set in backend `.env`
+- Check API key is valid at [Google AI Studio](https://makersuite.google.com/app/apikey)
+- AI features are optional - app works without them
