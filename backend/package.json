@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "db:docker:up": "docker-compose up -d",
     "db:docker:down": "docker-compose down",
     "db:docker:restart": "docker-compose restart",
