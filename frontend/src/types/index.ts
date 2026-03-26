@@ -75,3 +75,10 @@ export interface TaskFormData {
   tagIds?: string[];
 }
 
+export interface AiSuggestion {
+  description: string;
+  priority: string;
+  tags: string[];
+  estimatedTime: string;
+}
+
